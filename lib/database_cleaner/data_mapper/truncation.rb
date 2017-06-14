@@ -26,7 +26,7 @@ module DataMapper
       end
 
       def truncate_table(table_name)
-        execute("TRUNCATE TABLE #{quote_name(table_name)};")
+        execute("TRUNCATE TABLE #{quote_table_name(table_name)};")
       end
 
       # copied from activerecord
@@ -85,11 +85,6 @@ module DataMapper
     class SqliteAdapter; include SqliteAdapterMethods; end
     class Sqlite3Adapter; include SqliteAdapterMethods; end
 
-    # FIXME
-    # i don't know if this works
-    # i basically just copied activerecord code to get a rough idea what they do.
-    # i don't have postgres available, so i won't be the one to write this.
-    # maybe codes below gets some postgres/datamapper user going, though.
     class PostgresAdapter < DataObjectsAdapter
 
       # taken from http://github.com/godfat/dm-mapping/tree/master
@@ -98,21 +93,19 @@ module DataMapper
           SELECT table_name FROM "information_schema"."tables"
           WHERE table_schema = current_schema() and table_type = 'BASE TABLE'
         SQL
-        select(sql)
+        query(sql)
       end
 
       def truncate_table(table_name)
-        execute("TRUNCATE TABLE #{quote_name(table_name)} RESTART IDENTITY CASCADE;")
+        execute("TRUNCATE TABLE #{quote_table_name(table_name)} RESTART IDENTITY CASCADE;")
       end
 
       # override to use a single statement
       def truncate_tables(table_names)
-        quoted_names = table_names.collect { |n| quote_name(n) }.join(', ')
+        quoted_names = table_names.collect { |n| quote_table_name(n) }.join(', ')
         execute("TRUNCATE TABLE #{quoted_names} RESTART IDENTITY;")
       end
 
-      # FIXME
-      # copied from activerecord
       def supports_disable_referential_integrity?
         version = select("SHOW server_version")[0][0].split('.')
         (version[0].to_i >= 8 && version[1].to_i >= 1) ? true : false
@@ -120,19 +113,17 @@ module DataMapper
         return false
       end
 
-      # FIXME
-      # copied unchanged from activerecord
       def disable_referential_integrity(repository = :default)
         if supports_disable_referential_integrity? then
           execute(storage_names(repository).collect do |name|
-            "ALTER TABLE #{quote_name(name)} DISABLE TRIGGER ALL"
+            "ALTER TABLE #{quote_table_name(name)} DISABLE TRIGGER ALL"
           end.join(";"))
         end
         yield
       ensure
         if supports_disable_referential_integrity? then
           execute(storage_names(repository).collect do |name|
-            "ALTER TABLE #{quote_name(name)} ENABLE TRIGGER ALL"
+            "ALTER TABLE #{quote_table_name(name)} ENABLE TRIGGER ALL"
           end.join(";"))
         end
       end
