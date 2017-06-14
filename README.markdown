@@ -1,3 +1,8 @@
+# Nedap Staffing Solutions
+
+Forked this gem because we need it to properly work with DataMapper & Postgres.
+
+
 # Database Cleaner
 
 [![Build Status](https://travis-ci.org/DatabaseCleaner/database_cleaner.svg?branch=master)](https://travis-ci.org/DatabaseCleaner/database_cleaner)
